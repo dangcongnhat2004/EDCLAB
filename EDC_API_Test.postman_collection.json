@@ -1,0 +1,111 @@
+{
+	"info": {
+		"name": "EDC Management API v3 Test",
+		"description": "Test các endpoint của EDC Management API v3",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. POST Assets Query (Recommended)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-Api-Key",
+						"value": "password",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"@context\": {\n    \"@vocab\": \"https://w3id.org/edc/v0.0.1/ns/\"\n  }\n}"
+				},
+				"url": {
+					"raw": "http://localhost:19193/management/v3/assets/query",
+					"protocol": "http",
+					"host": ["localhost"],
+					"port": "19193",
+					"path": ["management", "v3", "assets", "query"]
+				}
+			}
+		},
+		{
+			"name": "3. POST Policies Query",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-Api-Key",
+						"value": "password",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"@context\": {\n    \"@vocab\": \"https://w3id.org/edc/v0.0.1/ns/\"\n  }\n}"
+				},
+				"url": {
+					"raw": "http://localhost:19193/management/v3/policydefinitions/query",
+					"protocol": "http",
+					"host": ["localhost"],
+					"port": "19193",
+					"path": ["management", "v3", "policydefinitions", "query"]
+				}
+			}
+		},
+		{
+			"name": "4. POST Contract Definitions Query",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "X-Api-Key",
+						"value": "password",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"@context\": {\n    \"@vocab\": \"https://w3id.org/edc/v0.0.1/ns/\"\n  }\n}"
+				},
+				"url": {
+					"raw": "http://localhost:19193/management/v3/contractdefinitions/query",
+					"protocol": "http",
+					"host": ["localhost"],
+					"port": "19193",
+					"path": ["management", "v3", "contractdefinitions", "query"]
+				}
+			}
+		},
+		{
+			"name": "5. OpenAPI Spec",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:19193/management/v3/api-docs",
+					"protocol": "http",
+					"host": ["localhost"],
+					"port": "19193",
+					"path": ["management", "v3", "api-docs"]
+				}
+			}
+		}
+	]
+}
+

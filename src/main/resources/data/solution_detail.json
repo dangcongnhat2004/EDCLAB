@@ -1,0 +1,75 @@
+[
+  {
+    "@id": "solution-001",
+    "@type": "dcat:Catalog",
+    "dcat:dataset": {
+      "title": "AI-Powered Analytics Solution",
+      "description": "Advanced analytics solution using machine learning",
+      "provider": "AI Solutions Inc.",
+      "img_url": "https://via.placeholder.com/300x200?text=AI+Analytics"
+    },
+    "assets": [
+      {
+        "@id": "asset-sol-001",
+        "@type": "Asset",
+        "properties": {
+          "name": "ML Models",
+          "id": "asset-sol-001",
+          "contenttype": "application/json"
+        }
+      },
+      {
+        "@id": "asset-sol-002",
+        "@type": "Asset",
+        "properties": {
+          "name": "Analytics Engine",
+          "id": "asset-sol-002",
+          "contenttype": "application/json"
+        }
+      }
+    ]
+  },
+  {
+    "@id": "solution-002",
+    "@type": "dcat:Catalog",
+    "dcat:dataset": {
+      "title": "Data Integration Platform",
+      "description": "Enterprise data integration and ETL solution",
+      "provider": "Integration Tech",
+      "img_url": "https://via.placeholder.com/300x200?text=Data+Integration"
+    },
+    "assets": [
+      {
+        "@id": "asset-sol-003",
+        "@type": "Asset",
+        "properties": {
+          "name": "ETL Pipeline",
+          "id": "asset-sol-003",
+          "contenttype": "application/json"
+        }
+      }
+    ]
+  },
+  {
+    "@id": "solution-003",
+    "@type": "dcat:Catalog",
+    "dcat:dataset": {
+      "title": "Real-time Dashboard Solution",
+      "description": "Real-time business intelligence and visualization",
+      "provider": "Dashboard Pro",
+      "img_url": "https://via.placeholder.com/300x200?text=Real-time+Dashboard"
+    },
+    "assets": [
+      {
+        "@id": "asset-sol-004",
+        "@type": "Asset",
+        "properties": {
+          "name": "Dashboard Components",
+          "id": "asset-sol-004",
+          "contenttype": "application/json"
+        }
+      }
+    ]
+  }
+]
+

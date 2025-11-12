@@ -1,0 +1,20 @@
+server:
+  port: 8081
+
+spring:
+  datasource:
+    url: jdbc:h2:mem:edcdb;MODE=MySQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driverClassName: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+# cấu hình EDC (đổi theo môi trường của bạn)
+app:
+  edc:
+    baseUrl: "http://localhost:19193"       # Provider Management base
+    consumerBaseUrl: "http://localhost:29193" # Consumer Management base
+    managementPath: "/management/v3"

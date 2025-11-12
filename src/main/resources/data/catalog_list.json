@@ -1,0 +1,33 @@
+[
+  {
+    "@id": "catalog-001",
+    "@type": "dcat:Catalog",
+    "dcat:dataset": {
+      "title": "Customer Data Catalog",
+      "description": "A comprehensive catalog of customer data assets",
+      "provider": "DataProvider Inc.",
+      "img_url": "https://via.placeholder.com/300x200?text=Customer+Data"
+    }
+  },
+  {
+    "@id": "catalog-002",
+    "@type": "dcat:Catalog",
+    "dcat:dataset": {
+      "title": "Sales Analytics Catalog",
+      "description": "Sales data and analytics for business intelligence",
+      "provider": "Analytics Corp",
+      "img_url": "https://via.placeholder.com/300x200?text=Sales+Analytics"
+    }
+  },
+  {
+    "@id": "catalog-003",
+    "@type": "dcat:Catalog",
+    "dcat:dataset": {
+      "title": "Product Information Catalog",
+      "description": "Detailed product information and specifications",
+      "provider": "ProductData Ltd",
+      "img_url": "https://via.placeholder.com/300x200?text=Product+Info"
+    }
+  }
+]
+
