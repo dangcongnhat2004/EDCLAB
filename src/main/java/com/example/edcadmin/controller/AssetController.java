@@ -1,6 +1,7 @@
 package com.example.edcadmin.controller;
 
 import com.example.edcadmin.model.AssetCreateRequest;
+import com.example.edcadmin.model.AssetDetailResponse;
 import com.example.edcadmin.service.EdcService;
 import jakarta.validation.Valid;
 import org.springframework.http.MediaType;
@@ -29,5 +30,10 @@ public class AssetController {
     @DeleteMapping("/{id}")
     public Mono<Void> delete(@PathVariable String id) {
         return edc.deleteAsset(id);
+    }
+
+    @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public Mono<AssetDetailResponse> detail(@PathVariable String id) {
+        return edc.getAssetDetail(id);
     }
 }

@@ -1,22 +1,26 @@
 package com.example.edcadmin.service;
 
-import com.example.edcadmin.entity.AssetEntity;
 import com.example.edcadmin.entity.ContractDefinitionEntity;
 import com.example.edcadmin.entity.PolicyEntity;
 import com.example.edcadmin.model.AssetCreateRequest;
+import com.example.edcadmin.model.AssetDetailResponse;
 import com.example.edcadmin.model.AssetEnvelope;
 import com.example.edcadmin.model.ContractDefinitionEnvelope;
 import com.example.edcadmin.model.PolicyEnvelope;
-import com.example.edcadmin.repository.AssetRepository;
 import com.example.edcadmin.repository.ContractDefinitionRepository;
 import com.example.edcadmin.repository.PolicyRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -25,7 +29,6 @@ public class EdcService {
     private final WebClient edcClient;
     private final WebClient consumerClient;
 
-    private final AssetRepository assetRepo;
     private final PolicyRepository policyRepo;
     private final ContractDefinitionRepository contractRepo;
     private final ObjectMapper objectMapper;
@@ -35,13 +38,11 @@ public class EdcService {
 
     public EdcService(WebClient edcClient,
                       WebClient consumerClient,
-                      AssetRepository assetRepo,
                       PolicyRepository policyRepo,
                       ContractDefinitionRepository contractRepo,
                       ObjectMapper objectMapper) {
         this.edcClient = edcClient;
         this.consumerClient = consumerClient;
-        this.assetRepo = assetRepo;
         this.policyRepo = policyRepo;
         this.contractRepo = contractRepo;
         this.objectMapper = objectMapper;
@@ -49,36 +50,9 @@ public class EdcService {
 
     // -------- Assets ----------
     public Mono<String> createAsset(AssetCreateRequest req) {
-        // lưu local DB
-        AssetEntity entity = new AssetEntity();
-        entity.setId(req.id());
-        entity.setName(req.name());
-        entity.setDescription(req.description());
-        entity.setContentType(req.contentType());
-        entity.setBaseUrl(req.dataAddress());
-        if (req.dataAddressDetails() != null) {
-            var details = req.dataAddressDetails();
-            if (details.endpoint() != null && !details.endpoint().isBlank()) {
-                entity.setEndpoint(details.endpoint());
-            }
-            if (details.authenticationMethod() != null
-                    && !details.authenticationMethod().isBlank()
-                    && !"none".equalsIgnoreCase(details.authenticationMethod())) {
-                entity.setAuthenticationMethod(details.authenticationMethod());
-            }
-        }
-        if (req.properties() != null && !req.properties().isEmpty()) {
-            try {
-                entity.setPropertiesJson(objectMapper.writeValueAsString(req.properties()));
-            } catch (Exception e) {
-                System.err.println("Error serializing asset properties: " + e.getMessage());
-            }
-        }
-        assetRepo.save(entity);
-
-        // publish lên EDC
+        // publish trực tiếp lên EDC - không lưu H2
         var json = AssetEnvelope.of(req).toJson();
-        
+
         // Log JSON để debug
         try {
             String jsonString = objectMapper.writeValueAsString(json);
@@ -102,7 +76,6 @@ public class EdcService {
                 .bodyToMono(String.class);
 
     }
-
     public Mono<String> listAssetsEdc() {
         // EDC Management API v3 - POST to /assets/request without body to list all assets
         // In Postman, sending POST without any body works (200 OK)
@@ -122,7 +95,6 @@ public class EdcService {
     }
 
     public Mono<Void> deleteAsset(String assetId) {
-        assetRepo.deleteById(assetId);
         return edcClient.delete()
                 .uri(managementPath + "/assets/{id}", assetId)
                 .header("X-Api-Key", "password")
@@ -136,12 +108,48 @@ public class EdcService {
                 .bodyToMono(Void.class);
     }
 
+    public Mono<AssetDetailResponse> getAssetDetail(String assetId) {
+        Map<String, Object> filter = new HashMap<>();
+        filter.put("operandLeft", "@id");
+        filter.put("operator", "=");
+        filter.put("operandRight", assetId);
+
+        Map<String, Object> querySpec = new HashMap<>();
+        querySpec.put("@type", "QuerySpec");
+        querySpec.put("limit", 1);
+        querySpec.put("filterExpression", List.of(filter));
+
+        return edcClient.post()
+                .uri(managementPath + "/assets/request")
+                .header("X-Api-Key", "password")
+                .header("Content-Type", "application/json")
+                .bodyValue(querySpec)
+                .retrieve()
+                .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),
+                        response -> response.bodyToMono(String.class)
+                                .flatMap(errorBody -> {
+                                    System.err.println("EDC Asset Detail Error Response: " + errorBody);
+                                    HttpStatusCode statusCode = response.statusCode();
+                                    String message = statusCode == HttpStatus.NOT_FOUND
+                                            ? "Asset not found"
+                                            : "EDC Asset Detail API Error: " + statusCode;
+                                    return Mono.error(new ResponseStatusException(statusCode, message));
+                                }))
+                .bodyToMono(new ParameterizedTypeReference<List<Map<String, Object>>>() {})
+                .map(results -> {
+                    if (results == null || results.isEmpty()) {
+                        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Asset not found");
+                    }
+                    return AssetDetailResponse.fromEdc(results.get(0));
+                });
+    }
+
     // -------- Policies ----------
     public Mono<String> createPolicy(String policyId) {
         policyRepo.save(new PolicyEntity(policyId));
         var envelope = PolicyEnvelope.allowAll(policyId);
         var body = envelope.toJson();
-        
+
         // Log JSON để debug
         try {
             String jsonString = objectMapper.writeValueAsString(body);
@@ -149,7 +157,7 @@ public class EdcService {
         } catch (Exception e) {
             System.err.println("Error serializing Policy JSON: " + e.getMessage());
         }
-        
+
         return edcClient.post()
                 .uri(managementPath + "/policydefinitions")
                 .header("X-Api-Key", "password")
@@ -190,7 +198,7 @@ public class EdcService {
 
         var envelope = ContractDefinitionEnvelope.all(id, policyId);
         var body = envelope.toJson();
-        
+
         // Log JSON để debug
         try {
             String jsonString = objectMapper.writeValueAsString(body);
@@ -198,7 +206,7 @@ public class EdcService {
         } catch (Exception e) {
             System.err.println("Error serializing Contract Definition JSON: " + e.getMessage());
         }
-        
+
         return edcClient.post()
                 .uri(managementPath + "/contractdefinitions")
                 .header("X-Api-Key", "password")
@@ -235,12 +243,12 @@ public class EdcService {
         // Format đúng theo EDC v3 - khớp với Sample 00
         Map<String, Object> context = new HashMap<>();
         context.put("@vocab", "https://w3id.org/edc/v0.0.1/ns/");
-        
+
         Map<String, Object> body = new HashMap<>();
         body.put("@context", context);
         body.put("counterPartyAddress", providerProtocolUrl);
         body.put("protocol", "dataspace-protocol-http");
-        
+
         // Log JSON để debug
         try {
             String jsonString = objectMapper.writeValueAsString(body);
@@ -248,7 +256,7 @@ public class EdcService {
         } catch (Exception e) {
             System.err.println("Error serializing Catalog Request JSON: " + e.getMessage());
         }
-        
+
         return consumerClient.post()
                 .uri(managementPath + "/catalog/request")
                 .header("X-Api-Key", "password")
@@ -268,21 +276,21 @@ public class EdcService {
         // Format đúng theo EDC v3 - khớp với Sample 00
         Map<String, Object> context = new HashMap<>();
         context.put("@vocab", "https://w3id.org/edc/v0.0.1/ns/");
-        
+
         Map<String, Object> policy = new HashMap<>();
         policy.put("@context", "http://www.w3.org/ns/odrl.jsonld");
         policy.put("@id", contractOfferId);
         policy.put("@type", "Offer");
         policy.put("assigner", "provider");
         policy.put("target", assetId);
-        
+
         Map<String, Object> body = new HashMap<>();
         body.put("@context", context);
         body.put("@type", "ContractRequest");
         body.put("counterPartyAddress", providerUrl);
         body.put("protocol", "dataspace-protocol-http");
         body.put("policy", policy);
-        
+
         // Log JSON để debug
         try {
             String jsonString = objectMapper.writeValueAsString(body);
@@ -290,7 +298,7 @@ public class EdcService {
         } catch (Exception e) {
             System.err.println("Error serializing Contract Negotiation JSON: " + e.getMessage());
         }
-        
+
         return consumerClient.post()
                 .uri(managementPath + "/contractnegotiations")
                 .header("X-Api-Key", "password")
@@ -314,7 +322,7 @@ public class EdcService {
         body.put("assetId", assetId);
         body.put("protocol", "dataspace-protocol-http");
         body.put("dataDestination", Map.of("type", "HttpData"));
-        
+
         // Log JSON để debug
         try {
             String jsonString = objectMapper.writeValueAsString(body);
@@ -322,7 +330,7 @@ public class EdcService {
         } catch (Exception e) {
             System.err.println("Error serializing Transfer Request JSON: " + e.getMessage());
         }
-        
+
         return consumerClient.post()
                 .uri(managementPath + "/transferprocesses")
                 .header("X-Api-Key", "password")
