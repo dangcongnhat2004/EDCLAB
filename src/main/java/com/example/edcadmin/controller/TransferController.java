@@ -1,7 +1,7 @@
 package com.example.edcadmin.controller;
 
-import com.example.edcadmin.model.TransferRequest;
-import com.example.edcadmin.service.EdcService;
+import com.example.edcadmin.model.transfer.TransferRequest;
+import com.example.edcadmin.service.TransferService;
 import jakarta.validation.Valid;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
@@ -11,13 +11,15 @@ import reactor.core.publisher.Mono;
 @RequestMapping("/api/transfers")
 public class TransferController {
 
-    private final EdcService edc;
+    private final TransferService transferService;
 
-    public TransferController(EdcService edc) { this.edc = edc; }
+    public TransferController(TransferService transferService) {
+        this.transferService = transferService;
+    }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public Mono<String> transfer(@Valid @RequestBody TransferRequest req) {
-        return edc.transferData(req.contractId(), req.assetId(), req.connectorAddress(), req.connectorId());
+        return transferService.transfer(req.getContractId(), req.getAssetId(), req.getConnectorAddress(), req.getConnectorId());
     }
 }
 

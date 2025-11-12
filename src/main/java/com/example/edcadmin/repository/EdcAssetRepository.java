@@ -1,8 +1,8 @@
 package com.example.edcadmin.repository;
 
-import com.example.edcadmin.model.AssetCreateRequest;
-import com.example.edcadmin.model.AssetDetailResponse;
-import com.example.edcadmin.model.AssetEnvelope;
+import com.example.edcadmin.model.asset.AssetCreateRequest;
+import com.example.edcadmin.model.asset.AssetDetailResponse;
+import com.example.edcadmin.model.asset.AssetEnvelope;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;

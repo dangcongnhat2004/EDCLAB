@@ -1,4 +1,6 @@
-package com.example.edcadmin.model;
+package com.example.edcadmin.model.asset;
+
+import lombok.Data;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -7,25 +9,37 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public record AssetDetailResponse(
-        String id,
-        String name,
-        String description,
-        String contentType,
-        String dataAddress,
-        String endpoint,
-        String authenticationMethod,
-        List<PropertyItem> properties
-) {
+@Data
+public class AssetDetailResponse {
+    private String id;
+    private String name;
+    private String description;
+    private String contentType;
+    private String dataAddress;
+    private String endpoint;
+    private String authenticationMethod;
+    private List<PropertyItem> properties;
+
     private static final Set<String> CORE_PROPERTY_KEYS = Set.of(
             "id", "@id", "name", "description", "contenttype"
     );
 
-    public record PropertyItem(String key, String value) {}
+    @Data
+    public static class PropertyItem {
+        private String key;
+        private String value;
+    }
 
     public static AssetDetailResponse fromEdc(Map<String, Object> asset) {
         if (asset == null || asset.isEmpty()) {
-            return new AssetDetailResponse("", "", "", "", "", null, null, Collections.emptyList());
+            AssetDetailResponse response = new AssetDetailResponse();
+            response.setId("");
+            response.setName("");
+            response.setDescription("");
+            response.setContentType("");
+            response.setDataAddress("");
+            response.setProperties(Collections.emptyList());
+            return response;
         }
 
         String id = asString(asset.get("@id"));
@@ -43,20 +57,23 @@ public record AssetDetailResponse(
         List<PropertyItem> propertyItems = new ArrayList<>();
         for (Map.Entry<String, Object> entry : properties.entrySet()) {
             if (!CORE_PROPERTY_KEYS.contains(entry.getKey())) {
-                propertyItems.add(new PropertyItem(entry.getKey(), asString(entry.getValue())));
+                PropertyItem item = new PropertyItem();
+                item.setKey(entry.getKey());
+                item.setValue(asString(entry.getValue()));
+                propertyItems.add(item);
             }
         }
 
-        return new AssetDetailResponse(
-                id,
-                name,
-                description,
-                contentType,
-                baseUrl,
-                endpoint,
-                authenticationMethod,
-                propertyItems
-        );
+        AssetDetailResponse response = new AssetDetailResponse();
+        response.setId(id);
+        response.setName(name);
+        response.setDescription(description);
+        response.setContentType(contentType);
+        response.setDataAddress(baseUrl);
+        response.setEndpoint(endpoint);
+        response.setAuthenticationMethod(authenticationMethod);
+        response.setProperties(propertyItems);
+        return response;
     }
 
     private static Map<String, Object> extractMap(Object source) {

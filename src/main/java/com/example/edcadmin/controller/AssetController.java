@@ -1,8 +1,8 @@
 package com.example.edcadmin.controller;
 
-import com.example.edcadmin.model.AssetCreateRequest;
-import com.example.edcadmin.model.AssetDetailResponse;
-import com.example.edcadmin.service.EdcService;
+import com.example.edcadmin.model.asset.AssetCreateRequest;
+import com.example.edcadmin.model.asset.AssetDetailResponse;
+import com.example.edcadmin.service.AssetService;
 import jakarta.validation.Valid;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
@@ -13,27 +13,29 @@ import reactor.core.publisher.Mono;
 @CrossOrigin(origins = "*")
 public class AssetController {
 
-    private final EdcService edc;
+    private final AssetService assetService;
 
-    public AssetController(EdcService edc) { this.edc = edc; }
+    public AssetController(AssetService assetService) {
+        this.assetService = assetService;
+    }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public Mono<String> create(@Valid @RequestBody AssetCreateRequest req) {
-        return edc.createAsset(req);
+        return assetService.create(req);
     }
 
     @GetMapping(value = "/edc", produces = MediaType.APPLICATION_JSON_VALUE)
     public Mono<String> listOnEdc() {
-        return edc.listAssetsEdc();
+        return assetService.findAll();
     }
 
     @DeleteMapping("/{id}")
     public Mono<Void> delete(@PathVariable String id) {
-        return edc.deleteAsset(id);
+        return assetService.deleteById(id);
     }
 
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public Mono<AssetDetailResponse> detail(@PathVariable String id) {
-        return edc.getAssetDetail(id);
+        return assetService.findById(id);
     }
 }

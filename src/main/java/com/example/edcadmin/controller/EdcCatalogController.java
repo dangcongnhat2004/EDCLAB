@@ -1,7 +1,7 @@
 package com.example.edcadmin.controller;
 
-import com.example.edcadmin.model.CatalogRequest;
-import com.example.edcadmin.service.EdcService;
+import com.example.edcadmin.model.catalog.CatalogRequest;
+import com.example.edcadmin.service.ConsumerCatalogService;
 import jakarta.validation.Valid;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
@@ -12,15 +12,15 @@ import reactor.core.publisher.Mono;
 @CrossOrigin(origins = "*")
 public class EdcCatalogController {
 
-    private final EdcService edc;
+    private final ConsumerCatalogService consumerCatalogService;
 
-    public EdcCatalogController(EdcService edc) {
-        this.edc = edc;
+    public EdcCatalogController(ConsumerCatalogService consumerCatalogService) {
+        this.consumerCatalogService = consumerCatalogService;
     }
 
     @PostMapping(value = "/request", consumes = MediaType.APPLICATION_JSON_VALUE)
     public Mono<String> request(@Valid @RequestBody CatalogRequest req) {
-        return edc.fetchCatalog(req.providerUrl());
+        return consumerCatalogService.fetchCatalog(req.getProviderUrl());
     }
 }
 

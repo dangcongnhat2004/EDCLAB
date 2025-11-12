@@ -1,15 +1,17 @@
-package com.example.edcadmin.model;
+package com.example.edcadmin.model.contract;
+
+import lombok.Data;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public record ContractDefinitionEnvelope(
-        String id,
-        String accessPolicyId,
-        String contractPolicyId,
-        List<Object> assetsSelector
-) {
+@Data
+public class ContractDefinitionEnvelope {
+    private String id;
+    private String accessPolicyId;
+    private String contractPolicyId;
+    private List<Object> assetsSelector;
     
     public Map<String, Object> toJson() {
         // Format đúng theo EDC v3
@@ -27,11 +29,11 @@ public record ContractDefinitionEnvelope(
     }
     
     public static ContractDefinitionEnvelope all(String id, String policyId) {
-        return new ContractDefinitionEnvelope(
-                id,
-                policyId,
-                policyId,
-                List.of() // áp dụng cho tất cả asset (empty array)
-        );
+        ContractDefinitionEnvelope envelope = new ContractDefinitionEnvelope();
+        envelope.setId(id);
+        envelope.setAccessPolicyId(policyId);
+        envelope.setContractPolicyId(policyId);
+        envelope.setAssetsSelector(List.of()); // áp dụng cho tất cả asset (empty array)
+        return envelope;
     }
 }

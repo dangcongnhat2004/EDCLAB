@@ -1,6 +1,6 @@
 package com.example.edcadmin.repository;
 
-import com.example.edcadmin.model.ContractDefinitionEnvelope;
+import com.example.edcadmin.model.contract.ContractDefinitionEnvelope;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;

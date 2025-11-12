@@ -1,6 +1,6 @@
 package com.example.edcadmin.controller;
 
-import com.example.edcadmin.service.EdcService;
+import com.example.edcadmin.service.PolicyService;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
@@ -10,17 +10,19 @@ import reactor.core.publisher.Mono;
 @CrossOrigin(origins = "*")
 public class PolicyController {
 
-    private final EdcService edc;
+    private final PolicyService policyService;
 
-    public PolicyController(EdcService edc) { this.edc = edc; }
+    public PolicyController(PolicyService policyService) {
+        this.policyService = policyService;
+    }
 
     @PostMapping("/{id}")
     public Mono<String> create(@PathVariable String id) {
-        return edc.createPolicy(id);
+        return policyService.create(id);
     }
 
     @GetMapping(value = "/edc", produces = MediaType.APPLICATION_JSON_VALUE)
     public Mono<String> listOnEdc() {
-        return edc.listPoliciesEdc();
+        return policyService.findAll();
     }
 }

@@ -1,9 +1,9 @@
 package com.example.edcadmin.repository;
 
-import com.example.edcadmin.model.Catalog;
-import com.example.edcadmin.model.CatalogDetail;
-import com.example.edcadmin.model.Solution;
-import com.example.edcadmin.model.SolutionDetail;
+import com.example.edcadmin.model.catalog.Catalog;
+import com.example.edcadmin.model.catalog.CatalogDetail;
+import com.example.edcadmin.model.solution.Solution;
+import com.example.edcadmin.model.solution.SolutionDetail;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Repository;

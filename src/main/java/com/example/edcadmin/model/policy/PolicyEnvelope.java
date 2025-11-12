@@ -1,10 +1,15 @@
-package com.example.edcadmin.model;
+package com.example.edcadmin.model.policy;
+
+import lombok.Data;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public record PolicyEnvelope(String id, Map<String, Object> policy) {
+@Data
+public class PolicyEnvelope {
+    private String id;
+    private Map<String, Object> policy;
     
     public Map<String, Object> toJson() {
         // Format đúng theo EDC v3 - tương tự AssetEnvelope và ContractDefinitionEnvelope
@@ -29,6 +34,9 @@ public record PolicyEnvelope(String id, Map<String, Object> policy) {
         policy.put("prohibition", List.of());
         policy.put("obligation", List.of());
         
-        return new PolicyEnvelope(id, policy);
+        PolicyEnvelope envelope = new PolicyEnvelope();
+        envelope.setId(id);
+        envelope.setPolicy(policy);
+        return envelope;
     }
 }

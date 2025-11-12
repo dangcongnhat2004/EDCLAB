@@ -1,4 +1,4 @@
-package com.example.edcadmin.model;
+package com.example.edcadmin.model.solution;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
