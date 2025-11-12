@@ -4,7 +4,6 @@ import com.example.edcadmin.model.asset.AssetCreateRequest;
 import com.example.edcadmin.model.asset.AssetDetailResponse;
 import com.example.edcadmin.model.asset.AssetEnvelope;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -25,11 +24,10 @@ public class EdcAssetRepository {
     private final String managementPath;
 
     public EdcAssetRepository(WebClient edcClient,
-                              ObjectMapper objectMapper,
-                              @Value("${app.edc.managementPath}") String managementPath) {
+                              ObjectMapper objectMapper) {
         this.edcClient = edcClient;
         this.objectMapper = objectMapper;
-        this.managementPath = managementPath;
+        this.managementPath = "/v3";
     }
 
     public Mono<String> create(AssetCreateRequest req) {

@@ -2,7 +2,6 @@ package com.example.edcadmin.repository;
 
 import com.example.edcadmin.model.policy.PolicyEnvelope;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
@@ -15,11 +14,10 @@ public class EdcPolicyRepository {
     private final String managementPath;
 
     public EdcPolicyRepository(WebClient edcClient,
-                              ObjectMapper objectMapper,
-                              @Value("${app.edc.managementPath}") String managementPath) {
+                              ObjectMapper objectMapper) {
         this.edcClient = edcClient;
         this.objectMapper = objectMapper;
-        this.managementPath = managementPath;
+        this.managementPath = "/v3";
     }
 
     public Mono<String> create(String policyId) {

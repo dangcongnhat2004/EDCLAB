@@ -1,9 +1,12 @@
-server:
-  port: 8081
+spring:
+  application:
+    name: demo
 
-# cấu hình EDC (đổi theo môi trường của bạn)
-app:
-  edc:
-    baseUrl: "http://localhost:19193"       # Provider Management base
-    consumerBaseUrl: "http://localhost:29193" # Consumer Management base
-    managementPath: "/management/v3"
+server:
+  port: 8080
+
+edc:
+  provider:
+    url: http://localhost:19193/management
+  consumer:
+    url: http://localhost:29193/management

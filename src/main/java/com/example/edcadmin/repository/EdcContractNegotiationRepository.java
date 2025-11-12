@@ -1,7 +1,6 @@
 package com.example.edcadmin.repository;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
@@ -17,11 +16,10 @@ public class EdcContractNegotiationRepository {
     private final String managementPath;
 
     public EdcContractNegotiationRepository(WebClient consumerClient,
-                                           ObjectMapper objectMapper,
-                                           @Value("${app.edc.managementPath}") String managementPath) {
+                                           ObjectMapper objectMapper) {
         this.consumerClient = consumerClient;
         this.objectMapper = objectMapper;
-        this.managementPath = managementPath;
+        this.managementPath = "/v3";
     }
 
     public Mono<String> negotiate(String providerUrl, String contractOfferId, String assetId) {

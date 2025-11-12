@@ -8,10 +8,10 @@ import org.springframework.web.reactive.function.client.WebClient;
 @Configuration
 public class WebClientConfig {
 
-    @Value("${app.edc.baseUrl}")
+    @Value("${edc.provider.url}")
     private String edcBaseUrl;
 
-    @Value("${app.edc.consumerBaseUrl}")
+    @Value("${edc.consumer.url}")
     private String consumerBaseUrl;
 
     @Bean
