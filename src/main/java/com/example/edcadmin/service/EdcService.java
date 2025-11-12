@@ -1,241 +1,76 @@
 package com.example.edcadmin.service;
 
-import com.example.edcadmin.entity.ContractDefinitionEntity;
-import com.example.edcadmin.entity.PolicyEntity;
 import com.example.edcadmin.model.AssetCreateRequest;
 import com.example.edcadmin.model.AssetDetailResponse;
-import com.example.edcadmin.model.AssetEnvelope;
-import com.example.edcadmin.model.ContractDefinitionEnvelope;
-import com.example.edcadmin.model.PolicyEnvelope;
-import com.example.edcadmin.repository.ContractDefinitionRepository;
-import com.example.edcadmin.repository.PolicyRepository;
+import com.example.edcadmin.repository.EdcAssetRepository;
+import com.example.edcadmin.repository.EdcContractDefinitionRepository;
+import com.example.edcadmin.repository.EdcPolicyRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Service
 public class EdcService {
 
-    private final WebClient edcClient;
+    private final EdcAssetRepository assetRepository;
+    private final EdcPolicyRepository policyRepository;
+    private final EdcContractDefinitionRepository contractDefinitionRepository;
     private final WebClient consumerClient;
-
-    private final PolicyRepository policyRepo;
-    private final ContractDefinitionRepository contractRepo;
     private final ObjectMapper objectMapper;
 
     @Value("${app.edc.managementPath}")
     private String managementPath;
 
-    public EdcService(WebClient edcClient,
+    public EdcService(EdcAssetRepository assetRepository,
+                      EdcPolicyRepository policyRepository,
+                      EdcContractDefinitionRepository contractDefinitionRepository,
                       WebClient consumerClient,
-                      PolicyRepository policyRepo,
-                      ContractDefinitionRepository contractRepo,
                       ObjectMapper objectMapper) {
-        this.edcClient = edcClient;
+        this.assetRepository = assetRepository;
+        this.policyRepository = policyRepository;
+        this.contractDefinitionRepository = contractDefinitionRepository;
         this.consumerClient = consumerClient;
-        this.policyRepo = policyRepo;
-        this.contractRepo = contractRepo;
         this.objectMapper = objectMapper;
     }
 
     // -------- Assets ----------
     public Mono<String> createAsset(AssetCreateRequest req) {
-        // publish trực tiếp lên EDC - không lưu H2
-        var json = AssetEnvelope.of(req).toJson();
-
-        // Log JSON để debug
-        try {
-            String jsonString = objectMapper.writeValueAsString(json);
-            System.out.println("Sending JSON to EDC: " + jsonString);
-        } catch (Exception e) {
-            System.err.println("Error serializing JSON: " + e.getMessage());
-        }
-
-        return edcClient.post()
-                .uri(managementPath + "/assets")
-                .header("X-Api-Key", "password") // QUAN TRỌNG
-                .header("Content-Type", "application/json")
-                .bodyValue(json)
-                .retrieve()
-                .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),
-                        response -> response.bodyToMono(String.class)
-                                .flatMap(errorBody -> {
-                                    System.err.println("EDC Error Response: " + errorBody);
-                                    return Mono.error(new RuntimeException("EDC API Error: " + response.statusCode() + " - " + errorBody));
-                                }))
-                .bodyToMono(String.class);
-
+        return assetRepository.create(req);
     }
+
     public Mono<String> listAssetsEdc() {
-        // EDC Management API v3 - POST to /assets/request without body to list all assets
-        // In Postman, sending POST without any body works (200 OK)
-        // Try without Content-Type header and without body
-        return edcClient.post()
-                .uri(managementPath + "/assets/request")
-                .header("X-Api-Key", "password")
-                // Don't set Content-Type when there's no body
-                .retrieve()
-                .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),
-                        response -> response.bodyToMono(String.class)
-                                .flatMap(errorBody -> {
-                                    System.err.println("EDC Assets Error Response: " + errorBody);
-                                    return Mono.error(new RuntimeException("EDC Assets API Error: " + response.statusCode() + " - " + errorBody));
-                                }))
-                .bodyToMono(String.class);
+        return assetRepository.findAll();
     }
 
     public Mono<Void> deleteAsset(String assetId) {
-        return edcClient.delete()
-                .uri(managementPath + "/assets/{id}", assetId)
-                .header("X-Api-Key", "password")
-                .retrieve()
-                .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),
-                        response -> response.bodyToMono(String.class)
-                                .flatMap(errorBody -> {
-                                    System.err.println("EDC Delete Asset Error Response: " + errorBody);
-                                    return Mono.error(new RuntimeException("EDC Delete Asset API Error: " + response.statusCode() + " - " + errorBody));
-                                }))
-                .bodyToMono(Void.class);
+        return assetRepository.deleteById(assetId);
     }
 
     public Mono<AssetDetailResponse> getAssetDetail(String assetId) {
-        Map<String, Object> filter = new HashMap<>();
-        filter.put("operandLeft", "@id");
-        filter.put("operator", "=");
-        filter.put("operandRight", assetId);
-
-        Map<String, Object> querySpec = new HashMap<>();
-        querySpec.put("@type", "QuerySpec");
-        querySpec.put("limit", 1);
-        querySpec.put("filterExpression", List.of(filter));
-
-        return edcClient.post()
-                .uri(managementPath + "/assets/request")
-                .header("X-Api-Key", "password")
-                .header("Content-Type", "application/json")
-                .bodyValue(querySpec)
-                .retrieve()
-                .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),
-                        response -> response.bodyToMono(String.class)
-                                .flatMap(errorBody -> {
-                                    System.err.println("EDC Asset Detail Error Response: " + errorBody);
-                                    HttpStatusCode statusCode = response.statusCode();
-                                    String message = statusCode == HttpStatus.NOT_FOUND
-                                            ? "Asset not found"
-                                            : "EDC Asset Detail API Error: " + statusCode;
-                                    return Mono.error(new ResponseStatusException(statusCode, message));
-                                }))
-                .bodyToMono(new ParameterizedTypeReference<List<Map<String, Object>>>() {})
-                .map(results -> {
-                    if (results == null || results.isEmpty()) {
-                        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Asset not found");
-                    }
-                    return AssetDetailResponse.fromEdc(results.get(0));
-                });
+        return assetRepository.findById(assetId);
     }
 
     // -------- Policies ----------
     public Mono<String> createPolicy(String policyId) {
-        policyRepo.save(new PolicyEntity(policyId));
-        var envelope = PolicyEnvelope.allowAll(policyId);
-        var body = envelope.toJson();
-
-        // Log JSON để debug
-        try {
-            String jsonString = objectMapper.writeValueAsString(body);
-            System.out.println("Sending Policy JSON to EDC: " + jsonString);
-        } catch (Exception e) {
-            System.err.println("Error serializing Policy JSON: " + e.getMessage());
-        }
-
-        return edcClient.post()
-                .uri(managementPath + "/policydefinitions")
-                .header("X-Api-Key", "password")
-                .header("Content-Type", "application/json")
-                .bodyValue(body)
-                .retrieve()
-                .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),
-                        response -> response.bodyToMono(String.class)
-                                .flatMap(errorBody -> {
-                                    System.err.println("EDC Policy Error Response: " + errorBody);
-                                    return Mono.error(new RuntimeException("EDC Policy API Error: " + response.statusCode() + " - " + errorBody));
-                                }))
-                .bodyToMono(String.class);
+        return policyRepository.create(policyId);
     }
 
     public Mono<String> listPoliciesEdc() {
-        // EDC Management API v3 - POST to /policydefinitions/request without body to list all policies
-        return edcClient.post()
-                .uri(managementPath + "/policydefinitions/request")
-                .header("X-Api-Key", "password")
-                // Don't set Content-Type when there's no body
-                .retrieve()
-                .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),
-                        response -> response.bodyToMono(String.class)
-                                .flatMap(errorBody -> {
-                                    System.err.println("EDC Policies Error Response: " + errorBody);
-                                    return Mono.error(new RuntimeException("EDC Policies API Error: " + response.statusCode() + " - " + errorBody));
-                                }))
-                .bodyToMono(String.class);
+        return policyRepository.findAll();
     }
 
     // -------- Contract Definitions ----------
     public Mono<String> createContractDef(String id, String policyId) {
-        var entity = new ContractDefinitionEntity();
-        entity.setId(id);
-        entity.setPolicyId(policyId);
-        contractRepo.save(entity);
-
-        var envelope = ContractDefinitionEnvelope.all(id, policyId);
-        var body = envelope.toJson();
-
-        // Log JSON để debug
-        try {
-            String jsonString = objectMapper.writeValueAsString(body);
-            System.out.println("Sending Contract Definition JSON to EDC: " + jsonString);
-        } catch (Exception e) {
-            System.err.println("Error serializing Contract Definition JSON: " + e.getMessage());
-        }
-
-        return edcClient.post()
-                .uri(managementPath + "/contractdefinitions")
-                .header("X-Api-Key", "password")
-                .header("Content-Type", "application/json")
-                .bodyValue(body)
-                .retrieve()
-                .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),
-                        response -> response.bodyToMono(String.class)
-                                .flatMap(errorBody -> {
-                                    System.err.println("EDC Contract Definition Error Response: " + errorBody);
-                                    return Mono.error(new RuntimeException("EDC Contract Definition API Error: " + response.statusCode() + " - " + errorBody));
-                                }))
-                .bodyToMono(String.class);
+        return contractDefinitionRepository.create(id, policyId);
     }
 
     public Mono<String> listContractDefsEdc() {
-        // EDC Management API v3 - POST to /contractdefinitions/request without body to list all contract definitions
-        return edcClient.post()
-                .uri(managementPath + "/contractdefinitions/request")
-                .header("X-Api-Key", "password")
-                // Don't set Content-Type when there's no body
-                .retrieve()
-                .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),
-                        response -> response.bodyToMono(String.class)
-                                .flatMap(errorBody -> {
-                                    System.err.println("EDC Contract Definitions Error Response: " + errorBody);
-                                    return Mono.error(new RuntimeException("EDC Contract Definitions API Error: " + response.statusCode() + " - " + errorBody));
-                                }))
-                .bodyToMono(String.class);
+        return contractDefinitionRepository.findAll();
     }
 
     // -------- Catalog (Consumer) ----------

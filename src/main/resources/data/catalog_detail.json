@@ -1,75 +1,32 @@
 [
   {
     "@id": "catalog-001",
-    "@type": "dcat:Catalog",
-    "dcat:dataset": {
-      "title": "Customer Data Catalog",
-      "description": "A comprehensive catalog of customer data assets",
-      "provider": "DataProvider Inc.",
-      "img_url": "https://via.placeholder.com/300x200?text=Customer+Data"
-    },
-    "assets": [
-      {
-        "@id": "asset-001",
-        "@type": "Asset",
-        "properties": {
-          "name": "Customer Profiles",
-          "id": "asset-001",
-          "contenttype": "application/json"
-        }
-      },
-      {
-        "@id": "asset-002",
-        "@type": "Asset",
-        "properties": {
-          "name": "Customer Transactions",
-          "id": "asset-002",
-          "contenttype": "application/json"
-        }
-      }
-    ]
+    "title": "Customer Data Catalog",
+    "description": "A comprehensive catalog of customer data assets",
+    "provider": "DataProvider Inc.",
+    "data_type": "Structured",
+    "format": "JSON",
+    "last_updated": "2024-01-15",
+    "contract_terms": "Standard data sharing agreement"
   },
   {
     "@id": "catalog-002",
-    "@type": "dcat:Catalog",
-    "dcat:dataset": {
-      "title": "Sales Analytics Catalog",
-      "description": "Sales data and analytics for business intelligence",
-      "provider": "Analytics Corp",
-      "img_url": "https://via.placeholder.com/300x200?text=Sales+Analytics"
-    },
-    "assets": [
-      {
-        "@id": "asset-003",
-        "@type": "Asset",
-        "properties": {
-          "name": "Sales Reports",
-          "id": "asset-003",
-          "contenttype": "application/json"
-        }
-      }
-    ]
+    "title": "Sales Analytics Catalog",
+    "description": "Sales data and analytics for business intelligence",
+    "provider": "Analytics Corp",
+    "data_type": "Analytics",
+    "format": "CSV",
+    "last_updated": "2024-01-20",
+    "contract_terms": "Analytics usage agreement"
   },
   {
     "@id": "catalog-003",
-    "@type": "dcat:Catalog",
-    "dcat:dataset": {
-      "title": "Product Information Catalog",
-      "description": "Detailed product information and specifications",
-      "provider": "ProductData Ltd",
-      "img_url": "https://via.placeholder.com/300x200?text=Product+Info"
-    },
-    "assets": [
-      {
-        "@id": "asset-004",
-        "@type": "Asset",
-        "properties": {
-          "name": "Product Catalog",
-          "id": "asset-004",
-          "contenttype": "application/json"
-        }
-      }
-    ]
+    "title": "Product Information Catalog",
+    "description": "Detailed product information and specifications",
+    "provider": "ProductData Ltd",
+    "data_type": "Reference",
+    "format": "JSON",
+    "last_updated": "2024-01-25",
+    "contract_terms": "Product data license"
   }
 ]
-

@@ -2,47 +2,27 @@ package com.example.edcadmin.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
-import java.util.List;
 
 @Data
 public class SolutionDetail {
     @JsonProperty("@id")
     private String id;
 
-    @JsonProperty("@type")
-    private String type;
+    private String title;
 
-    @JsonProperty("dcat:dataset")
-    private SolutionDataset solutionDataset;
+    private String description;
 
-    private List<AssetInfo> assets;
+    private String provider;
 
-    @Data
-    public static class SolutionDataset {
-        private String title;
-        private String description;
-        private String provider;
+    @JsonProperty("data_type")
+    private String data_type;
 
-        @JsonProperty("img_url")
-        private String imgUrl;
-    }
+    private String format;
 
-    @Data
-    public static class AssetInfo {
-        @JsonProperty("@id")
-        private String id;
+    @JsonProperty("last_updated")
+    private String lastUpdated;
 
-        @JsonProperty("@type")
-        private String type;
-
-        private Properties properties;
-
-        @Data
-        public static class Properties {
-            private String name;
-            private String id;
-            private String contenttype;
-        }
-    }
+    @JsonProperty("contract_terms")
+    private String contractTerms;
 }
 

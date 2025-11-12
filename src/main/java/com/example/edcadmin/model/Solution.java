@@ -8,20 +8,15 @@ public class Solution {
     @JsonProperty("@id")
     private String id;
 
-    @JsonProperty("@type")
-    private String type;
+    private String title;
 
-    @JsonProperty("dcat:dataset")
-    private SolutionDataset solutionDataset;
+    private String description;
 
-    @Data
-    public static class SolutionDataset {
-        private String title;
-        private String description;
-        private String provider;
+    private String provider;
 
-        @JsonProperty("img_url")
-        private String imgUrl;
-    }
+    @JsonProperty("img_url")
+    private String imgUrl;
+
+    private boolean purchased;
 }
 
